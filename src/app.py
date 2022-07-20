@@ -1,12 +1,10 @@
+from classes.Database import Database
 from classes.SGBD import SGBD
 
 sgbd = SGBD()
 
-sgbd.create_database()
-sgbd.create_database()
-sgbd.create_database()
-sgbd.create_database()
+sgbd.create_database("Database 1")
+sgbd.create_database("Database 1")
 
-
-print(len(sgbd.get_databases()))
+print(sgbd.get_databases_names())
 
