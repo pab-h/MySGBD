@@ -25,14 +25,3 @@ class SGBD:
         self.databases.append(new_database)
 
         return new_database
-
-    def get_databases(self) -> list:
-
-        return self.databases
-
-    def get_databases_names(self) -> list:
-
-        def get_name(database: Database) -> str:
-            return database.get_name()
-
-        return list(map(get_name, self.get_databases()))

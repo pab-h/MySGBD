@@ -8,9 +8,6 @@ class Database:
         self.path = path
         self.folder = uuid()
 
-    def get_name(self) -> str:
-        
-        return self.name
 
     def persist(self) -> None:
         folder_path = f"{ self.path }/{ self.folder }"
@@ -20,3 +17,9 @@ class Database:
 
         if not os.path.exists(folder_path):
             os.mkdir(folder_path)
+
+        info_path = f"{ folder_path }/info.json"
+
+        if not os.path.exists(info_path):
+            with open(info_path, 'w') as info_file: 
+                pass
