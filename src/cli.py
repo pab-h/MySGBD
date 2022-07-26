@@ -1,17 +1,33 @@
-import json
-from modules.documents import Documents
+import argparse
+from modules.folders import Folders
 
-SGBD_STORAGE_PATH = './tmp'
+class Cli:
+    SGBD_LOCAL_STORAGE = './tmp'
 
-content = """
-{
-    "name": "Pablo Hugo"
-}
-"""
+    def __init__(self) -> None:
+        self.parser = argparse.ArgumentParser(description="CLI")
+        self.folders = Folders(
+            path=Cli.SGBD_LOCAL_STORAGE
+        )
 
-document = Documents(
-    content=json.loads(content),
-    path=SGBD_STORAGE_PATH
-)
+        self.__run()
 
-document.save()
+    def __set_args_folders(self) -> None:
+        self.parser.add_argument(
+            "--folders-create",
+            type=str,
+            required=False
+        )
+
+        self.parser.add_argument("--folders-get", required=False)
+
+    def __run(self) -> None:
+        self.__set_args_folders()
+
+        args = self.parser.parse_args()
+
+        if args.folders_create:
+            self.folders.create(args.folders_create)
+
+
+Cli()
