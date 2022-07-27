@@ -1,5 +1,5 @@
 import os
-from hashlib import sha224
+import shutil
 from modules.folder import Folder
 
 class Folders:
@@ -7,19 +7,17 @@ class Folders:
         self.path = path 
 
     def get(self, id: str) -> Folder:
-        search_id = sha224(id.encode('utf-8')).hexdigest()
         dirs_names = os.listdir(self.path)
 
-        if search_id in dirs_names:
+        if id in dirs_names:
             return Folder(
-                path=f"{ self.path }/{ search_id }"
+                path=f"{ self.path }/{ id }"
             )
         
         raise Exception(f"Folder { id } not exists")
 
     def create(self, id: str) -> Folder:
-        search_id = sha224(id.encode('utf-8')).hexdigest()
-        folder = f"{ self.path }/{ search_id }"
+        folder = f"{ self.path }/{ id }"
 
         if os.path.exists(folder):
             raise Exception(f"Folder { id } already exists")
@@ -29,3 +27,16 @@ class Folders:
         return Folder(
             path=folder
         )
+
+    def delete(self, id: str) -> None:
+        folder = f"{ self.path }/{ id }"
+
+        if not os.path.exists(folder):
+            raise Exception(f"Folder { id } not exists")
+
+        shutil.rmtree(folder)
+
+
+    def list(self) -> list[str]:
+        return os.listdir(self.path)
+
