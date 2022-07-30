@@ -1,86 +1,184 @@
 import argparse
 import json
 import sys
+
 from modules.folders import Folders
+from modules.utils import print_json
 
 class Cli:
     SGBD_LOCAL_STORAGE = './tmp'
+    CLI_VERSION = "1.0.0"
 
     def __init__(self) -> None:
-        self.parser = argparse.ArgumentParser(description="CLI")
         self.folders = Folders(
             path=Cli.SGBD_LOCAL_STORAGE
         )
 
         self.__run()
 
-    def __set_args_folders(self) -> None:
-        self.parser.add_argument(
-            "--folders-create",
+    def __create_folders_parser(self, subparsers):
+        self.folders_parser = subparsers.add_parser(
+            "folders", 
+            help="Folders handler"
+        )
+
+        self.folders_parser.add_argument(
+            "-c", 
+            "--create", 
+            help="Create a folder",
             type=str,
             required=False
         )
 
-        self.parser.add_argument(
-            "--folders-get",
+        self.folders_parser.add_argument(
+            "-d", 
+            "--delete", 
+            help="Delete a folder by name",
             type=str,
             required=False
         )
 
-        self.parser.add_argument(
-            "--folders-delete",
+        self.folders_parser.add_argument(
+            "-l", 
+            "--list", 
+            help="list all folders",
+            action="store_true",
+            required=False
+        )        
+
+    def __create_documents_parser(self, subparsers):
+        self.documents_parser = subparsers.add_parser(
+            "documents",
+            help="Folders handler"
+        )
+        
+        self.documents_parser.add_argument(
+            "folder",
+            type=str
+        )
+
+        self.documents_parser.add_argument(
+            "-l", 
+            "--list", 
+            help="List all documents",
             type=str,
             required=False
         )
 
-        self.parser.add_argument(
-            "--folders-list",
-            action='store_true',
-            required=False
-        )
-
-    def __set_args_documents(self) -> None:
-        self.parser.add_argument(
-            "--documents-create",
+        self.documents_parser.add_argument(
+            "-g", 
+            "--get", 
+            help="Get document by id",
             type=str,
             required=False
         )
 
+        self.documents_parser.add_argument(
+            "-c", 
+            "--create", 
+            help="Create document",
+            type=str,
+            required=False
+        )
 
+        self.documents_parser.add_argument(
+            "-d", 
+            "--delete", 
+            help="Delete document",
+            type=str,
+            required=False
+        )
+
+        self.documents_parser.add_argument(
+            "-u", 
+            "--update", 
+            help="Update document",
+            type=str,
+            required=False
+        )
 
     def __run(self) -> None:
-        self.__set_args_folders()
-        self.__set_args_documents()
+
+        self.parser = argparse.ArgumentParser(
+            prog="My sgbd",
+            description="Estava com tempo sobrando e...",
+            epilog="Desenvolvido por https://github.com/pab-h"
+        )
+
+        self.parser.version = self.CLI_VERSION
+        self.parser.add_argument("-v", "--version", action="version")
+
+        subparsers = self.parser.add_subparsers(
+            dest="command",
+            help="Actions folders"
+        )
+
+        self.__create_folders_parser(subparsers)
+        self.__create_documents_parser(subparsers)
 
         args = self.parser.parse_args()
 
-        if args.folders_create:
-            folder = self.folders.create(args.folders_create)
-            self.current_folder = args.folders_create
-            print(json.dumps({
-                "ok": True
-            }))
+        try:
+            if args.command == "folders":
 
-        if args.folders_get:
-            folder = self.folders.get(args.folders_get)
-            print(json.dumps({
-                "ok": True
-            }))
+                if args.create:
+                    self.folders.create(args.create)
 
-        if args.folders_list:
-            print(json.dumps({
-                "ok": True,
-                "folders": self.folders.list()
-            }))
+                    print_json({ 
+                        "ok": True,
+                        "mensage": f"Folder { args.create } created"
+                    })
 
-        if args.folders_delete:
-            self.folders.delete(args.folders_delete)
-            print(json.dumps({
-                "ok": True
-            }))
+                if args.delete:
+                    self.folders.delete(args.delete)
 
-        # if args.
-        sys.exit(0)
+                    print_json({ 
+                        "ok": True,
+                        "mensage": f"Folder { args.delete } deleted"
+                    })
 
+                if args.list:
+                    folders = self.folders.list()
 
+                    print_json({ 
+                        "ok": True,
+                        "folders": folders
+                    })
+            if args.command == "documents":
+                folder = self.folders.get(args.folder)
+
+                if args.create:
+                    json_parsed = json.loads(args.create)
+                    document = folder.create(json_parsed)
+
+                    print_json({
+                        "ok": True,
+                        "document_id": document.id
+                    })
+
+                if args.get and not args.update:
+                    document = folder.get(args.get)
+
+                    print_json({
+                        "ok": True,
+                        "document": document.read()
+                    })
+
+                if args.get and args.update:
+                    document = folder.get(args.get)
+                    
+                    json_parsed = json.loads(args.update)
+                    document.update(json_parsed)
+
+                    print_json({ "ok": True })
+                    
+            sys.exit(0)
+                
+        except Exception as e:
+            print_json({ 
+                "ok": False,
+                "mensage": e.args[0]
+            })    
+
+            sys.exit(1)
 Cli()

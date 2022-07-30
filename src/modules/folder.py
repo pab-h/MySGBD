@@ -18,11 +18,14 @@ class Folder:
         )
 
     def create(self, content: dict) -> Document:
+        id = uuid()
+        
         document = Document(
-            uuid(), 
-            f"{ self.path }/{ uuid() }.json"
+            id, 
+            f"{ self.path }/{ id }.json"
         )
 
+        document.update(content)
         document.save()
 
         return document
@@ -31,3 +34,6 @@ class Folder:
         document = self.get(id)
 
         os.remove(document.file)
+
+    def list(self) -> list:
+        return []
