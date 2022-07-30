@@ -1,20 +1,46 @@
 import argparse
+import configparser
 import json
+import os
 import sys
 
 from modules.folders import Folders
 from modules.utils import print_json
 
 class Cli:
-    SGBD_LOCAL_STORAGE = './tmp'
-    CLI_VERSION = "1.0.0"
+    INI_PATH = "./database.ini"
+    CLI_VERSION = "1.1.0"
 
     def __init__(self) -> None:
+        self.settings = self.__load_ini_file()
+
         self.folders = Folders(
-            path=Cli.SGBD_LOCAL_STORAGE
+            path=self.settings.get(
+                "settings", 
+                "local_storage"
+            )
         )
 
         self.__run()
+
+    def __create_default_ini_file(self) -> None:
+        parser = configparser.ConfigParser()
+
+        parser["settings"] = { 
+            "local_storage": "./tmp" 
+        }
+
+        with open(self.INI_PATH, "w+") as file:
+            parser.write(file)
+
+    def __load_ini_file(self) -> configparser.ConfigParser: 
+        if not os.path.exists(self.INI_PATH):
+            self.__create_default_ini_file()
+
+        parser = configparser.ConfigParser()
+        parser.read(self.INI_PATH)
+
+        return parser
 
     def __create_folders_parser(self, subparsers):
         self.folders_parser = subparsers.add_parser(
